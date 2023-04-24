@@ -1,22 +1,118 @@
-
-// TODO: expect to use inquire prompt - ask questions - based on answers - functions
-
-// Import and require mysql2
-const mysql = require("mysql");
+// Import and require mysql2, inquirer, and console.table packages
+const mysql = require("mysql2");
 const inquirer = require("inquirer");
-require("console.table");
+const consoleTable = require("console.table");
 
-// Connect to database
-const db = mysql.createConnection(
-  {
-    host: 'localhost',
-    user: 'root',
-    password: 'Mickey23',
-    database: 'employees_db'
-  },
+// Connect to the database using the provided credentials
+const db = mysql.createConnection({
+  host: "localhost",
+  user: "root",
+  password: "Mickey23",
+  database: "employees_db",
+});
 
-  console.log(`Connected to the employees_db database.`)
-);
+// Check if the connection is successful
+db.connect((err) => {
+  if (err) {
+    console.error("Error connecting to the database: " + err.stack);
+    return;
+  }
+  console.log(`Connected to the employees_db database.`);
+  mainMenu();
+});
+
+// Function to display the main menu
+function mainMenu() {
+  inquirer
+    .prompt([
+      {
+        type: "list",
+        name: "menuChoice",
+        message: "Please choose an option from the menu below:",
+        choices: [
+          "View All Departments",
+          "View All Roles",
+          "View All Employees",
+          "Add a Department",
+          "Add a Role",
+          "Add an Employee",
+          "Update an Employee Role",
+          "Quit",
+        ],
+      },
+    ])
+    .then((answer) => {
+      switch (answer.menuChoice) {
+        case "View All Departments":
+          viewAllDepartments();
+          break;
+        case "View All Roles":
+          viewAllRoles();
+          break;
+        case "View All Employees":
+          viewAllEmployees();
+          break;
+        case "Add a Department":
+          createDepartment();
+          break;
+        case "Add a Role":
+          createRole();
+          break;
+        case "Add an Employee":
+          createEmployee();
+          break;
+        case "Update an Employee Role":
+          updateEmployeeRole();
+          break;
+        default:
+          console.log("Goodbye!");
+          db.end();
+          break;
+      }
+    });
+}
+
+// Function to view all departments
+function viewAllDepartments() {
+  const sql = `SELECT * FROM department`;
+
+  db.query(sql, (err, rows) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.table(rows);
+    mainMenu();
+  });
+}
+
+// Function to view all roles
+function viewAllRoles() {
+  const sql = `SELECT role.id, role.title, department.name AS department, role.salary FROM role INNER JOIN department ON role.department_id = department.id`;
+
+  db.query(sql, (err, rows) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.table(rows);
+    mainMenu();
+  });
+}
+
+// Function to view all employees
+function viewAllEmployees() {
+  const sql = `SELECT employee.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, " ", manager.last_name) AS manager FROM employee LEFT JOIN role ON employee.role_id = role.id LEFT JOIN department ON role.department_id = department.id LEFT JOIN employee manager ON employee.manager_id = manager.id`;
+
+  db.query(sql, (err, rows) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    console.table(rows);
+    mainMenu();
+  });
+}
 
 // Create a department
 function createDepartment() {
@@ -35,8 +131,7 @@ function createDepartment() {
       },
     ])
     .then((answer) => {
-      const sql = `INSERT INTO department (name)
-        VALUES (?)`;
+      const sql = `INSERT INTO department (name) VALUES (?)`;
       const params = [answer.department_name];
 
       db.query(sql, params, (err, result) => {
@@ -45,86 +140,151 @@ function createDepartment() {
           return;
         }
         console.log("Department added successfully!");
-        mainMenu();
+        viewAllDepartments();
       });
     });
 }
-
-// Read all movies
-app.get('/api/movies', (req, res) => {
-  const sql = `SELECT id, movie_name AS title FROM movies`;
+// View all departments
+function viewAllDepartments() {
+  const sql = `SELECT * FROM department`;
 
   db.query(sql, (err, rows) => {
     if (err) {
-      res.status(500).json({ error: err.message });
+      console.log(err);
       return;
     }
-    res.json({
-      message: 'success',
-      data: rows
-    });
+    console.table(rows);
+    mainMenu();
   });
-});
-
-// Delete a movie
-app.delete('/api/movie/:id', (req, res) => {
-  const sql = `DELETE FROM movies WHERE id = ?`;
-  const params = [req.params.id];
-
-  db.query(sql, params, (err, result) => {
+}
+// Create a role
+function createRole() {
+  // Query the department table to get a list of department names
+  db.query(`SELECT id, name FROM department`, (err, rows) => {
     if (err) {
-      res.statusMessage(400).json({ error: res.message });
-    } else if (!result.affectedRows) {
-      res.json({
-        message: 'Movie not found'
-      });
-    } else {
-      res.json({
-        message: 'deleted',
-        changes: result.affectedRows,
-        id: req.params.id
-      });
+      console.log(err);
+      return;
     }
-  });
-});
 
-// Read list of all reviews and associated movie name using LEFT JOIN
-app.get('/api/movie-reviews', (req, res) => {
-  const sql = `SELECT movies.movie_name AS movie, reviews.review FROM reviews LEFT JOIN movies ON reviews.movie_id = movies.id ORDER BY movies.movie_name;`;
+    // Map the department data to an array of objects with name and value properties
+    const departmentChoices = rows.map(({ id, name }) => ({
+      name: name,
+      value: id,
+    }));
+
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "title",
+          message: "What is the title of the role you would like to add?",
+          validate: (input) => {
+            if (input === "") {
+              return "Please enter a role title.";
+            }
+            return true;
+          },
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "What is the salary of the role you would like to add?",
+          validate: (input) => {
+            if (isNaN(input)) {
+              return "Please enter a number.";
+            }
+            return true;
+          },
+        },
+        {
+          type: "list",
+          name: "department_id",
+          message: "Which department does this role belong to?",
+          choices: departmentChoices,
+        },
+      ])
+      .then((answer) => {
+        const sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
+        const params = [
+          answer.title,
+          answer.salary,
+          answer.department_id,
+        ];
+
+        db.query(sql, params, (err, result) => {
+          if (err) {
+            console.log(err);
+            return;
+          }
+          console.log("Role added successfully!");
+          mainMenu();
+        });
+      });
+  });
+}
+
+// View all roles
+function viewRoles() {
+  const sql = SELECT role.id, role.title, role.salary, department.name AS department FROM role LEFT JOIN department ON role.department_id = department.id;
+
   db.query(sql, (err, rows) => {
     if (err) {
-      res.status(500).json({ error: err.message });
+      console.log(err);
       return;
     }
-    res.json({
-      message: 'success',
-      data: rows
-    });
+    console.table(rows);
+    mainMenu();
   });
-});
+}
 
-// BONUS: Update review name
-app.put('/api/review/:id', (req, res) => {
-  const sql = `UPDATE reviews SET review = ? WHERE id = ?`;
-  const params = [req.body.review, req.params.id];
-
-  db.query(sql, params, (err, result) => {
+// Create an employee
+function createEmployee() {
+  // Query the role table to get a list of role titles
+  db.query(SELECT id, title FROM role, (err, rows) => {
     if (err) {
-      res.status(400).json({ error: err.message });
-    } else if (!result.affectedRows) {
-      res.json({
-        message: 'Movie not found'
-      });
-    } else {
-      res.json({
-        message: 'success',
-        data: req.body,
-        changes: result.affectedRows
-      });
+      console.log(err);
+      return;
     }
-  });
-});
+// Map the role data to an array of objects with name and value properties
+const roleChoices = rows.map(({ id, title }) => ({
+  name: title,
+  value: id,
+}));
 
+// Query the employee table to get a list of manager names
+db.query(
+  `SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employee`,
+  (err, rows) => {
+    if (err) {
+      console.log(err);
+      return;
+    }
 
-// -------------------------------------------
+    // Add a "None" option to the beginning of the manager choices array
+    const managerChoices = [{ name: "None", value: null }];
 
+    // Map the employee data to an array of objects with name and value properties
+    managerChoices.push(
+      ...rows.map(({ id, name }) => ({ name: name, value: id }))
+    );
+
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "first_name",
+          message: "What is the employee's first name?",
+          validate: (input) => {
+            if (input === "") {
+              return "You must enter a first name.";
+            }
+            return true;
+          },
+        },
+        // add more prompt questions here
+      ])
+      .then((answers) => {
+        // handle the answers
+      });
+  }
+);
