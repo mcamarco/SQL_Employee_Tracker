@@ -1,8 +1,6 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table')
-const { opening } = require('./questions')
-const { viewAllDepartments, viewAllRoles, viewAllEmployees, addADepartment, addARole, addAnEmployee, updateEmpRole } = require('./queries')
 
 const db = mysql.createConnection({
   host: 'localhost',
@@ -55,74 +53,32 @@ function promptUser() {
     });
 }
 
+function updateEmployeeRole() {
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'employeeId',
+        message: 'Enter the ID of the employee you want to update:'
+      },
+      {
+        type: 'input',
+        name: 'roleId',
+        message: 'Enter the ID of the new role:'
+      }
+    ])
+    .then((answers) => {
+      const { employeeId, roleId } = answers;
+      db.query(
+        `UPDATE employees SET role_id = ? WHERE id = ?`,
+        [roleId, employeeId],
+        (err, result) => {
+          if (err) throw err;
+          console.log(`Employee ${employeeId} role updated successfully.`);
+          promptUser();
+        }
+      );
+    });
+}
+
 promptUser();
-
-// function updateEmployeeRole() {
-//   inquirer
-//     .prompt([
-//       {
-//         type: 'input',
-//         name: 'title',
-//         message: 'Enter the new role title:'
-//       },
-//       {
-//         type: 'input',
-//         name: 'salary',
-//         message: 'Enter the new role salary:'
-//       },
-//       {
-//         type: 'input',
-//         name: 'department_id',
-//         message: 'Enter the new role department ID:'
-//       }
-//     ])
-//     .then((answers) => {
-//       db.query(
-//         `UPDATE roles SET title = ?, salary = ?, department_id = ? WHERE id = ?`,
-//         [answers.title, answers.salary, answers.department_id, roleId],
-//         (err, result) => {
-//           if (err) throw err;
-//           console.log(`Role ${roleId} updated successfully.`);
-//           promptUser();
-//         }
-//       );
-//     });
-// }
-
-// function viewAllRoles() {
-//   db.query(viewAllRolesQuery, (err, result) => {
-//     if (err) throw err;
-//     console.table(result);
-//     promptUser();
-//   });
-// }
-
-// function addARole() {
-//   inquirer
-//     .prompt([
-//       {
-//         type: 'input',
-//         name: 'title',
-//         message: 'Enter the role title:'
-//       },
-//       {
-//         type: 'input',
-//         name: 'salary',
-//         message: 'Enter the role salary:'
-//       },
-//       {
-//         type: 'input',
-//         name: 'department_id',
-//         message: 'Enter the role department ID:'
-//       }
-//     ])
-//     .then((answers) => {
-//       db.query(
-//         `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`,
-//         [answers.title, answers.salary, answers.department_id],
-//         (err, result) => {
-//           if (err) throw err;
-//           console.log(`Role ${result.insertId} added successfully.`);
-//           prompt
-//         })
-//     });
