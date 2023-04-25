@@ -1,10 +1,9 @@
-// Import and require mysql2, inquirer, and console.table packages
 const mysql = require("mysql2");
-const inquirer = require("inquirer");
+const inquirer = require('inquirer')
 const consoleTable = require("console.table");
 
 // Connect to the database using the provided credentials
-const db = mysql.createConnection({
+const db = mysql.createPool({
   host: "localhost",
   user: "root",
   password: "Mickey23",
@@ -225,7 +224,7 @@ function createRole() {
 
 // View all roles
 function viewRoles() {
-  const sql = SELECT role.id, role.title, role.salary, department.name AS department FROM role LEFT JOIN department ON role.department_id = department.id;
+  const sql = "SELECT role.id, role.title, role.salary, department.name AS department FROM role LEFT JOIN department ON role.department_id = department.id;";
 
   db.query(sql, (err, rows) => {
     if (err) {
@@ -240,11 +239,15 @@ function viewRoles() {
 // Create an employee
 function createEmployee() {
   // Query the role table to get a list of role titles
-  db.query(SELECT id, title FROM role, (err, rows) => {
-    if (err) {
-      console.log(err);
-      return;
-    }
+  db.query('SELECT id, title FROM role', (err, rows) => {
+    if (err) throw err;
+    const roles = rows.map(role => ({
+      name: role.title,
+      value: role.id,
+    }));
+    promptNewEmployee(roles);
+  });
+};
 // Map the role data to an array of objects with name and value properties
 const roleChoices = rows.map(({ id, title }) => ({
   name: title,
