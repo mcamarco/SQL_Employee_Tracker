@@ -1,11 +1,28 @@
 {
-  "name": "employee-tracker",
+  "name": "main",
   "version": "1.0.0",
-  "description": "Command-line application for managing employee database",
   "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "seed": "node seeds/seeds.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "Developers frequently have to create interfaces that allow non-developers to easily view and interact with information stored in databases. These interfaces are called **content management systems (CMS)**. Your assignment this week is to build a command-line application from scratch to manage a company's employee database, using Node.js, Inquirer, and MySQL.",
   "dependencies": {
-    "console.table": "^0.10.0",
-    "inquirer": "^8.2.0",
+    "express": "^4.17.1",
+    "inquirer": "^7.3.3",
+    "jshint": "^2.12.0",
     "mysql2": "^2.2.5"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcamarco/SQL_Employee_Tracker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mcamarco/SQL_Employee_Tracker/issues"
+  },
+  "homepage": "https://github.com/mcamarco/SQL_Employee_Tracker#readme"
 }
