@@ -58,13 +58,13 @@ The application uses a database schema with the following tables:
 
 ## Walkthrough Video
 
-[Link to the walkthrough video](<insert video link here>)
+[Link to the walkthrough video](<https://drive.google.com/file/d/1hx7YX1mtD_AE3BV2rvqdm7LebgyKyMHK/view>)
 
 ## Screenshots
 
-![Screenshot 1](screenshots/screenshot1.png)
-![Screenshot 2](screenshots/screenshot2.png)
-![Screenshot 3](screenshots/screenshot3.png)
+![Screenshot 1](assets/Screenshot%202023-05-17%20005724.png)
+![Screenshot 2](assets/Screenshot%202023-05-17%20005815.png)
+![Screenshot 3](assets/Screenshot%202023-05-17%20005952.png)
 
 ## Contributing
 

@@ -200,7 +200,7 @@ function updateEmployeeRole() {
     .then((answers) => {
       const { employeeId, roleId } = answers;
       db.query(
-        `UPDATE employees SET role_id = ? WHERE id = ?`,
+        `UPDATE employee SET role_id = ? WHERE id = ?`,
         [roleId, employeeId],
         (err, result) => {
           if (err) throw err;
