@@ -113,6 +113,7 @@ function addARole() {
           message: 'What department is the role in?',
           choices: result.map(department => department.name)
         }])
+
       // Find department ID that matches answer by department_name
       .then(data => {
         let department = result.find(department => department.name === data.department_name)
@@ -127,7 +128,7 @@ function addARole() {
 
 // View All Employees
 function viewAllEmployees() {
-  db.query('SELECT * from employees', (err, result) => {
+  db.query('SELECT * from employee', (err, result) => {
     if (err) throw err;
     console.table(result);
     promptUser();
@@ -135,96 +136,80 @@ function viewAllEmployees() {
 };
 
 // Add an Employee
-function addAnEmployee() {
-  db.query('SELECT * FROM role', (err, result) => {
-    if (err) throw err;
-    inquirer
-      .prompt([
-        {
-          type: 'input',
-          name: 'first_name',
-          message: 'What is their FIRST name?',
-        },
-        {
-          type: 'input',
-          name: 'last_name',
-          message: 'What is their LAST name?',
-        },
-        // ROLE ID
-        {
-          type: 'list',
-          name: 'role_id',
-          message: 'What is the role title?',
-          choices: result.map(role => role.title)
-        },
-        // MGR ID
-        {
-          type: 'list',
-          name: 'manager_id',
-          message: 'Who is the Manager ID?',
-          choices: [1, 2, 3]
-        }])
+function addAnEmployee () {
+db.query('SELECT * FROM role', (err, result) => {
+  if (err) throw err;
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'first_name',
+        message: 'What is their FIRST name?',
+      },
+      {
+        type: 'input',
+        name: 'last_name',
+        message: 'What is their LAST name?',
+      },
+      // ROLE ID
+      {
+        type: 'list',
+        name: 'role_id',
+        message: 'What is the role title?',
+        choices: result.map(role => role.title)
+      },
+      // MGR ID
+      {
+        type: 'list',
+        name: 'manager_id',
+        message: 'Who is the Manager ID?',
+        choices: [1,2,3]
+      } ])
 
-      // Find mgr ID that matches answer by mgr name
-      .then(data => {
-        let role = result.find(role => role.title === data.role_id)
-        db.query('INSERT INTO employee SET ?', {
-          first_name: data.first_name,
-          last_name: data.last_name,
-          role_id: role.id,
-          manager_id: data.manager_id
-        })
-        // TODO: add a .then to show manager NAME when adding a new employee & backround would read as manager #
-
-        promptUser();
+    // Find mgr ID that matches answer by mgr name
+    .then(data => {
+      let role = result.find(role => role.title === data.role_id)
+      db.query('INSERT INTO employee SET ?', {
+        first_name: data.first_name, 
+        last_name: data.last_name,
+        role_id: role.id,
+        manager_id: data.manager_id
       })
-  })
-};
-// Update Employee Role
-function updateEmployeeRole() {
-  db.query('SELECT * FROM role', (err, result) => {
-    if (err) throw err;
-    inquirer
-      .prompt([
-        {
-          type: 'input',
-          name: 'first_name',
-          message: 'What is their FIRST name?',
-        },
-        {
-          type: 'input',
-          name: 'last_name',
-          message: 'What is their LAST name?',
-        },
-        // ROLE ID
-        {
-          type: 'list',
-          name: 'role_id',
-          message: 'What is the role title?',
-          choices: result.map(role => role.title)
-        },
-        // MGR ID
-        {
-          type: 'list',
-          name: 'manager_id',
-          message: 'Who is the Manager ID?',
-          choices: [1, 2, 3]
-        }
-      ])
+     // TODO: add a .then to show manager NAME when adding a new employee & background would read as manager #
 
-      // Find mgr ID that matches answer by mgr name
-      .then(data => {
-        let role = result.find(role => role.title === data.role_id);
-        db.query('INSERT INTO employee SET ?', {
-          first_name: data.first_name,
-          last_name: data.last_name,
-          role_id: role.id,
-          manager_id: data.manager_id
-        }, (err, result) => {
+      promptUser();
+    })
+})
+};
+
+// UPDATE EMPLOYEE ROLE
+function updateEmployeeRole() {
+  inquirer
+    .prompt([
+      {
+        type: 'input',
+        name: 'employeeId',
+        message: 'Enter the ID of the employee you want to update:'
+      },
+      {
+        type: 'input',
+        name: 'roleId',
+        message: 'Enter the ID of the new role:'
+      }
+    ])
+    .then((answers) => {
+      const { employeeId, roleId } = answers;
+      db.query(
+        `UPDATE employees SET role_id = ? WHERE id = ?`,
+        [roleId, employeeId],
+        (err, result) => {
           if (err) throw err;
-          console.log('Employee role updated successfully.');
+          console.log(`Employee ${employeeId} role updated successfully.`);
           promptUser();
-        });
-      });
-  });
+        }
+      );
+    });
 }
+
+
+promptUser();
